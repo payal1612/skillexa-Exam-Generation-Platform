@@ -43,7 +43,7 @@ app.use(helmet());
 // CORS – allow frontend to communicate
 app.use(
   cors({
-    origin: [CLIENT_URL, 'http://localhost:5173', 'http://localhost:5174', 'https://skillexa-exam-generation-platform.vercel.app'],
+    origin: [CLIENT_URL, 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
   })
 );
