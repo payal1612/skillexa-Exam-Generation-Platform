@@ -5,47 +5,42 @@ export default function Footer() {
 
   const footerSections = [
     {
-      title: 'Product',
+      title: 'Features',
       links: [
-        { name: 'Dashboard', href: '#dashboard' },
-        { name: 'Skills Library', href: '#skills' },
-        { name: 'AI Assessments', href: '#assessments' },
-        { name: 'Analytics', href: '#analytics' },
-        { name: 'Certificates', href: '#certificates' },
-        { name: 'Mobile App', href: '#mobile' }
+        { name: 'Dashboard', href: '/dashboard' },
+        { name: 'Skills Library', href: '/skills' },
+        { name: 'Exams', href: '/exams' },
+        { name: 'Challenges', href: '/challenges' },
+        { name: 'Certificates', href: '/certificates' },
+        { name: 'Leaderboard', href: '/leaderboard' }
       ]
     },
     {
-      title: 'Company',
+      title: 'Learning',
       links: [
-        { name: 'About Us', href: '#about' },
-        { name: 'Careers', href: '#careers' },
-        { name: 'Press Kit', href: '#press' },
-        { name: 'Blog', href: '#blog' },
-        { name: 'Partners', href: '#partners' },
-        { name: 'Investors', href: '#investors' }
+        { name: 'Achievements', href: '/achievements' },
+        { name: 'Career Roadmap', href: '/career' },
+        { name: 'Analytics', href: '/analytics' },
+        { name: 'Exam Generator', href: '/exam-generator' },
+        { name: 'Profile', href: '/profile' }
       ]
     },
     {
-      title: 'Resources',
+      title: 'Panels',
       links: [
-        { name: 'Help Center', href: '#help' },
-        { name: 'API Documentation', href: '#api' },
-        { name: 'Community', href: '#community' },
-        { name: 'Webinars', href: '#webinars' },
-        { name: 'Case Studies', href: '#cases' },
-        { name: 'White Papers', href: '#papers' }
+        { name: 'Admin Panel', href: '/admin' },
+        { name: 'Instructor Panel', href: '/instructor' },
+        { name: 'User Dashboard', href: '/user-dashboard' },
+        { name: 'Exam Status', href: '/exam-status' }
       ]
     },
     {
       title: 'Legal',
       links: [
-        { name: 'Privacy Policy', href: '#privacy' },
-        { name: 'Terms of Service', href: '#terms' },
-        { name: 'Cookie Policy', href: '#cookies' },
-        { name: 'GDPR', href: '#gdpr' },
-        { name: 'Security', href: '#security' },
-        { name: 'Compliance', href: '#compliance' }
+        { name: 'Privacy Policy', href: '/privacy' },
+        { name: 'Terms of Service', href: '/terms' },
+        { name: 'Contact Us', href: '/contact' },
+        { name: 'Support', href: '/support' }
       ]
     }
   ];

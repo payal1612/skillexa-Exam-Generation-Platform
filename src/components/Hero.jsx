@@ -48,7 +48,7 @@ export default function Hero({ goToLogin, goToRegister }) {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-sm text-gray-600 justify-center lg:justify-start">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span>No credit card required</span>
+                <span>Free Acess Content</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -56,7 +56,7 @@ export default function Hero({ goToLogin, goToRegister }) {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span>Cancel anytime</span>
+                <span> learn  anytime</span>
               </div>
             </div>
           </div>

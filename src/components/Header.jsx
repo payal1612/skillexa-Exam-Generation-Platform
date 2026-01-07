@@ -21,7 +21,7 @@ export default function Header({ goToLogin, goToRegister, user, onLogout }) {
             </span>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation
           <nav className="hidden lg:flex items-center gap-8">
             <a href="#features" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
               Features
@@ -35,9 +35,10 @@ export default function Header({ goToLogin, goToRegister, user, onLogout }) {
             <a href="#contact" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
               Contact
             </a>
-          </nav>
+          </nav> */}
 
           {/* Desktop Auth Buttons */}
+          
           <div className="hidden lg:flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">

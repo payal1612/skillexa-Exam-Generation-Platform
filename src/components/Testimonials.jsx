@@ -66,7 +66,7 @@ export default function Testimonials() {
           </p>
         </div>
 
-        {/* Stats */}
+        {/* Stats
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12 sm:mb-16 md:mb-20">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
@@ -76,7 +76,7 @@ export default function Testimonials() {
               <div className="text-sm sm:text-base text-gray-600">{stat.label}</div>
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
@@ -127,25 +127,6 @@ export default function Testimonials() {
           ))}
         </div>
 
-        {/* Call to Action */}
-        <div className="text-center mt-12 sm:mt-16 md:mt-20">
-          <div className="bg-white rounded-2xl p-6 sm:p-8 md:p-12 shadow-lg border border-gray-200">
-            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-              Ready to Join Them?
-            </h3>
-            <p className="text-gray-600 mb-8 text-base sm:text-lg max-w-2xl mx-auto">
-              Start your free trial today and experience the future of personalized learning.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                Start Free Trial
-              </button>
-              <button className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-3 rounded-lg font-medium border border-gray-300 transition-colors">
-                View Demo
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
