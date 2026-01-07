@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BookOpen, Users, BarChart3, Plus, CreditCard as Edit3, Eye, Trash2, Search, Filter, Download, Upload, Clock, CheckCircle, AlertCircle, Target, Award, TrendingUp, Calendar, Star, RefreshCw, GraduationCap, FileText, Settings, Bell, ChevronRight, Sparkles, Zap, Activity, PieChart, ArrowUpRight, ArrowDownRight, MoreVertical, Mail, Phone } from 'lucide-react';
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function InstructorPanel({ onBack, onCreateExam }) {
   const [activeTab, setActiveTab] = useState('overview');
