@@ -120,7 +120,8 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/chatbot/message', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/chatbot/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
