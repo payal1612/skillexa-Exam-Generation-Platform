@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { 
   ArrowLeft, 
   Brain, 
@@ -11,6 +12,7 @@ import {
   Play,
   Info
 } from 'lucide-react';
+import './ExamGenerator.css';
 
 export default function ExamGenerator({ onBack, onStartExam }) {
   const [selectedSkill, setSelectedSkill] = useState('');
@@ -63,18 +65,74 @@ export default function ExamGenerator({ onBack, onStartExam }) {
     }
 
     setIsGenerating(true);
-    
-    // Simulate exam generation
-    setTimeout(() => {
-      setIsGenerating(false);
+
+    try {
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        alert('Please login to generate exams');
+        setIsGenerating(false);
+        return;
+      }
+      
+      const mcqCount = numQuestions;
+      const msqCount = 0;
+      // Map UI difficulty to backend accepted values
+      const difficultyMap = {
+        'novice': 'easy',
+        'intermediate': 'medium', 
+        'expert': 'hard',
+        'master': 'hard'
+      };
+      const difficulty = difficultyMap[difficultyLevel.toLowerCase()] || 'medium';
+      
+      // Get full skill name for better AI generation
+      const skillNames = {
+        'nlp': 'Natural Language Processing',
+        'cv': 'Computer Vision',
+        'ml': 'Machine Learning',
+        'dl': 'Deep Learning'
+      };
+      const subjectName = skillNames[selectedSkill] || selectedSkill;
+
+      const response = await axios.post(
+        `${apiBase}/api/exam/generate`,
+        {
+          subject: subjectName,
+          topics: [selectedCategory].filter(Boolean),
+          difficulty,
+          totalQuestions: numQuestions,
+          mcqCount,
+          msqCount,
+          durationMinutes: timeLimit,
+          negativeMarking: false,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const generatedExam = response.data.exam;
+
       onStartExam({
-        skill: selectedSkillData?.name,
+        skill: generatedExam.examMeta?.subject || subjectName,
         category: selectedCategory,
-        difficulty: difficultyLevel,
-        questions: numQuestions,
-        timeLimit: timeLimit
+        difficulty: generatedExam.examMeta?.difficulty || difficultyLevel,
+        questions: generatedExam.questions,
+        timeLimit: generatedExam.examMeta?.durationMinutes || timeLimit
       });
-    }, 2000);
+    } catch (error) {
+      const apiMessage = error?.response?.data?.message;
+      const validation = error?.response?.data?.errors;
+      console.error('Error generating exam:', error.response?.data || error.message);
+      const friendly = apiMessage || (validation ? 'Exam generation failed. Check inputs.' : null);
+      alert(friendly || 'Failed to generate exam. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -312,28 +370,6 @@ export default function ExamGenerator({ onBack, onStartExam }) {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none;
-          height: 20px;
-          width: 20px;
-          border-radius: 50%;
-          background: #7c3aed;
-          cursor: pointer;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .slider::-moz-range-thumb {
-          height: 20px;
-          width: 20px;
-          border-radius: 50%;
-          background: #7c3aed;
-          cursor: pointer;
-          border: none;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-      `}</style>
     </div>
   );
 }

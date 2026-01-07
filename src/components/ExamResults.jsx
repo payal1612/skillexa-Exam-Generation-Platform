@@ -7,14 +7,17 @@ import {
   XCircle, 
   RotateCcw,
   Share2,
-  Download,
   Home,
+  Award,
+  Zap,
+  Star,
+  Sparkles,
   BookOpen
 } from 'lucide-react';
 
-export default function ExamResults({ results, onRetakeExam, onBackToDashboard }) {
-  const { score, totalQuestions, answeredQuestions, timeSpent, answers, questions } = results;
-  
+export default function ExamResults({ results, onRetakeExam, onBackToDashboard, onViewCertificates }) {
+  const { score, totalQuestions, answeredQuestions, timeSpent, answers, questions, passed, xpAwarded, leveledUp, newLevel, rank, certificateCreated } = results;
+
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -44,24 +47,56 @@ export default function ExamResults({ results, onRetakeExam, onBackToDashboard }
   const skippedQuestions = totalQuestions - answeredQuestions;
 
   const performance = getPerformanceMessage(score);
+  
+  const isPassed = passed !== undefined ? passed : score >= 70;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">{performance.icon}</div>
+          <div className="text-6xl mb-4">{isPassed ? '🎉' : '😔'}</div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            Exam Complete!
+            {isPassed ? 'Congratulations! You Passed!' : 'Exam Complete'}
           </h1>
           <p className="text-lg text-gray-600">{performance.message}</p>
+          
+          {/* Pass/Fail Badge */}
+          <div className={`inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-full text-lg font-bold ${
+            isPassed 
+              ? 'bg-green-100 text-green-800 border-2 border-green-300' 
+              : 'bg-red-100 text-red-800 border-2 border-red-300'
+          }`}>
+            {isPassed ? <CheckCircle className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
+            {isPassed ? 'PASSED' : 'FAILED'}
+          </div>
+
+          {/* XP Earned Display */}
+          {xpAwarded > 0 && (
+            <div className="mt-6 animate-bounce">
+              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-xl shadow-lg">
+                <Sparkles className="w-6 h-6" />
+                <span className="text-xl font-bold">+{xpAwarded} XP Earned!</span>
+                <Star className="w-6 h-6" />
+              </div>
+              {leveledUp && (
+                <div className="mt-3">
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-violet-600 text-white px-5 py-2 rounded-lg shadow-md">
+                    <Zap className="w-5 h-5" />
+                    <span className="font-bold">Level Up! You're now Level {newLevel} - {rank}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Score Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-8">
-          <div className={`bg-gradient-to-r ${getScoreBgColor(score)} p-8 text-white text-center`}>
+          <div className={`bg-gradient-to-r ${isPassed ? 'from-green-500 to-emerald-600' : 'from-red-500 to-pink-600'} p-8 text-white text-center`}>
             <div className="text-6xl sm:text-7xl font-bold mb-2">{score}%</div>
-            <div className="text-xl opacity-90">Your Score</div>
+            <div className="text-xl opacity-90">Your Score {isPassed ? '✓' : '✗'}</div>
+            <div className="text-sm mt-2 opacity-75">Passing Score: 70%</div>
           </div>
           
           <div className="p-6 sm:p-8">
@@ -258,11 +293,38 @@ export default function ExamResults({ results, onRetakeExam, onBackToDashboard }
             Share Results
           </button>
           
-          <button className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-            <Download className="w-5 h-5" />
-            Download Certificate
-          </button>
+          {(passed || score >= 70) && (
+            <button 
+              onClick={onViewCertificates}
+              className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              <Award className="w-5 h-5" />
+              {certificateCreated ? 'View Certificate' : 'View Certificates'}
+            </button>
+          )}
         </div>
+
+        {/* Certificate Earned Banner */}
+        {(passed || score >= 70) && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <Award className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-green-800">
+                  {certificateCreated ? '🎉 Certificate Earned!' : '🎉 Congratulations! You Passed!'}
+                </h3>
+                <p className="text-sm text-green-700">
+                  {certificateCreated 
+                    ? 'Your certificate has been created. Visit the Certificates page to download it.'
+                    : 'You can now download your certificate from the Certificates page.'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

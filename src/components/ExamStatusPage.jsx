@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { 
   Clock, 
   CheckCircle, 
@@ -14,116 +15,62 @@ import {
   Search,
   Eye,
   Download,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function ExamStatusPage({ onBack, onStartExam }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState('date');
+  const [examStatuses, setExamStatuses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const examStatuses = [
-    {
-      id: 1,
-      title: 'Machine Learning Fundamentals - Expert Level',
-      skill: 'Machine Learning',
-      category: 'Supervised Learning',
-      difficulty: 'Expert',
-      questions: 20,
-      timeLimit: 45,
-      status: 'in-progress',
-      progress: 65,
-      questionsAnswered: 13,
-      timeSpent: 28,
-      startedAt: '2024-01-16T10:30:00Z',
-      lastActivity: '2024-01-16T11:15:00Z',
-      score: null,
-      attempts: 1
-    },
-    {
-      id: 2,
-      title: 'Deep Learning Neural Networks - Intermediate',
-      skill: 'Deep Learning',
-      category: 'Neural Networks',
-      difficulty: 'Intermediate',
-      questions: 15,
-      timeLimit: 30,
-      status: 'completed',
-      progress: 100,
-      questionsAnswered: 15,
-      timeSpent: 28,
-      startedAt: '2024-01-15T14:00:00Z',
-      completedAt: '2024-01-15T14:28:00Z',
-      score: 88,
-      attempts: 1
-    },
-    {
-      id: 3,
-      title: 'Natural Language Processing - Expert Level',
-      skill: 'NLP',
-      category: 'Transformers',
-      difficulty: 'Expert',
-      questions: 25,
-      timeLimit: 60,
-      status: 'scheduled',
-      progress: 0,
-      questionsAnswered: 0,
-      timeSpent: 0,
-      scheduledFor: '2024-01-17T09:00:00Z',
-      score: null,
-      attempts: 0
-    },
-    {
-      id: 4,
-      title: 'Computer Vision Basics - Novice Level',
-      skill: 'Computer Vision',
-      category: 'Image Processing',
-      difficulty: 'Novice',
-      questions: 10,
-      timeLimit: 20,
-      status: 'failed',
-      progress: 100,
-      questionsAnswered: 10,
-      timeSpent: 18,
-      startedAt: '2024-01-14T16:00:00Z',
-      completedAt: '2024-01-14T16:18:00Z',
-      score: 45,
-      attempts: 2
-    },
-    {
-      id: 5,
-      title: 'Data Science Pipeline - Intermediate',
-      skill: 'Data Science',
-      category: 'MLOps',
-      difficulty: 'Intermediate',
-      questions: 18,
-      timeLimit: 40,
-      status: 'expired',
-      progress: 30,
-      questionsAnswered: 5,
-      timeSpent: 12,
-      startedAt: '2024-01-13T11:00:00Z',
-      expiredAt: '2024-01-13T11:40:00Z',
-      score: null,
-      attempts: 1
-    },
-    {
-      id: 6,
-      title: 'Reinforcement Learning - Master Level',
-      skill: 'Machine Learning',
-      category: 'Reinforcement Learning',
-      difficulty: 'Master',
-      questions: 30,
-      timeLimit: 90,
-      status: 'draft',
-      progress: 0,
-      questionsAnswered: 0,
-      timeSpent: 0,
-      createdAt: '2024-01-16T08:00:00Z',
-      score: null,
-      attempts: 0
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return { headers: { Authorization: `Bearer ${token}` } };
+  };
+
+  // Fetch exam results from API
+  const fetchExamResults = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE}/api/exams/user/results`, getAuthHeaders());
+      
+      // Transform API data to match component format
+      const transformedResults = (res.data.results || []).map((result, index) => ({
+        id: result._id || index + 1,
+        title: result.skillName || result.exam?.title || 'Exam',
+        skill: result.skillName || result.exam?.skillName || 'General',
+        category: result.exam?.category || 'AI Generated',
+        difficulty: result.exam?.difficulty || 'Intermediate',
+        questions: result.totalQuestions || 0,
+        timeLimit: result.exam?.timeLimit || 30,
+        status: result.passed ? 'completed' : 'failed',
+        progress: 100,
+        questionsAnswered: result.totalQuestions || 0,
+        timeSpent: result.timeSpent || result.timeTaken || 0,
+        startedAt: result.createdAt,
+        completedAt: result.completedAt || result.createdAt,
+        score: result.score || 0,
+        attempts: result.attemptNumber || 1,
+        passed: result.passed
+      }));
+      
+      setExamStatuses(transformedResults);
+    } catch (err) {
+      console.error('Failed to fetch exam results:', err);
+      setExamStatuses([]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchExamResults();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -203,22 +150,24 @@ export default function ExamStatusPage({ onBack, onStartExam }) {
       bg: 'bg-blue-100' 
     },
     { 
-      label: 'Completed', 
-      value: examStatuses.filter(e => e.status === 'completed').length, 
+      label: 'Passed', 
+      value: examStatuses.filter(e => e.passed === true).length, 
       icon: CheckCircle, 
       color: 'text-green-600', 
       bg: 'bg-green-100' 
     },
     { 
-      label: 'In Progress', 
-      value: examStatuses.filter(e => e.status === 'in-progress').length, 
-      icon: Play, 
-      color: 'text-blue-600', 
-      bg: 'bg-blue-100' 
+      label: 'Failed', 
+      value: examStatuses.filter(e => e.passed === false).length, 
+      icon: XCircle, 
+      color: 'text-red-600', 
+      bg: 'bg-red-100' 
     },
     { 
       label: 'Average Score', 
-      value: Math.round(examStatuses.filter(e => e.score).reduce((sum, e) => sum + e.score, 0) / examStatuses.filter(e => e.score).length) + '%', 
+      value: examStatuses.length > 0 
+        ? Math.round(examStatuses.reduce((sum, e) => sum + (e.score || 0), 0) / examStatuses.length) + '%'
+        : '0%', 
       icon: Target, 
       color: 'text-purple-600', 
       bg: 'bg-purple-100' 
@@ -269,13 +218,26 @@ export default function ExamStatusPage({ onBack, onStartExam }) {
                   <Clock className="w-8 h-8 text-violet-600" />
                   Exam Status
                 </h1>
-                <p className="text-gray-600 mt-1">Track your exam progress and manage ongoing assessments</p>
+                <p className="text-gray-600 mt-1">Track your exam progress and results</p>
               </div>
             </div>
+            <button
+              onClick={fetchExamResults}
+              className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Refresh
+            </button>
           </div>
         </div>
       </div>
 
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-violet-600 animate-spin" />
+          <span className="ml-3 text-gray-600">Loading exam results...</span>
+        </div>
+      ) : (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -477,10 +439,23 @@ export default function ExamStatusPage({ onBack, onStartExam }) {
           <div className="text-center py-12">
             <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No exams found</h3>
-            <p className="text-gray-600">Try adjusting your search criteria or filters</p>
+            <p className="text-gray-600 mb-4">
+              {examStatuses.length === 0 
+                ? "You haven't taken any exams yet. Start your first exam!"
+                : "Try adjusting your search criteria or filters"}
+            </p>
+            {examStatuses.length === 0 && (
+              <button
+                onClick={() => onStartExam && onStartExam({})}
+                className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                Take an Exam
+              </button>
+            )}
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from "axios";
 import { BookOpen, Eye, EyeOff, ArrowLeft, CheckCircle, X } from 'lucide-react';
 
 export default function Register({ goToLogin, goToLanding, onRegister }) {
@@ -8,6 +9,7 @@ export default function Register({ goToLogin, goToLanding, onRegister }) {
     password: '',
     confirmPassword: ''
   });
+
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,74 +25,61 @@ export default function Register({ goToLogin, goToLanding, onRegister }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-    
-    // Clear errors when user starts typing
-    if (errors[name]) {
-      setErrors({...errors, [name]: ''});
-    }
+    setFormData({ ...formData, [name]: value });
+
+    if (errors[name]) setErrors({ ...errors, [name]: '' });
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = 'Full name must be at least 2 characters';
-    }
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-    
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    
-    if (!agreedToTerms) {
-      newErrors.terms = 'You must agree to the Terms of Service and Privacy Policy';
-    }
-    
+
+    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Email invalid";
+
+    if (!formData.password) newErrors.password = "Password required";
+    if (!formData.confirmPassword) newErrors.confirmPassword = "Confirm password required";
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
+
+    if (!agreedToTerms)
+      newErrors.terms = "You must accept terms";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // ⭐ Backend integration
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
 
+    if (!validateForm()) return;
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      const userData = {
-        name: formData.fullName,
-        email: formData.email,
-        id: Date.now().toString(),
-        streak: 0,
-        points: 0,
-        examsCompleted: 0,
-        masteredSkills: 0
-      };
-      
-      onRegister(userData);
-      setIsLoading(false);
-    }, 1500);
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          name: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword
+        },
+        { withCredentials: true }
+      );
+
+      // Save token for login session
+      localStorage.setItem("token", res.data.token);
+
+      // pass registered user to app
+      onRegister(res.data.user);
+
+    } catch (error) {
+      alert(error?.response?.data?.message || "Registration failed");
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -193,9 +182,8 @@ export default function Register({ goToLogin, goToLanding, onRegister }) {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password}</p>}
-              
-              {/* Password Requirements */}
+
+              {/* Password Rules */}
               {formData.password && (
                 <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
@@ -244,16 +232,17 @@ export default function Register({ goToLogin, goToLanding, onRegister }) {
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+
               {errors.confirmPassword && <p className="text-red-600 text-sm mt-1">{errors.confirmPassword}</p>}
             </div>
 
             {/* Terms */}
             <div>
               <div className="flex items-start gap-3">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   id="terms"
-                  className="mt-1 w-4 h-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500 accent-violet-600" 
+                  className="mt-1 w-4 h-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500 accent-violet-600"
                   checked={agreedToTerms}
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
                 />
@@ -271,7 +260,7 @@ export default function Register({ goToLogin, goToLanding, onRegister }) {
               {errors.terms && <p className="text-red-600 text-sm mt-1">{errors.terms}</p>}
             </div>
 
-            {/* Create Account */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
@@ -283,12 +272,12 @@ export default function Register({ goToLogin, goToLanding, onRegister }) {
                   Creating Account...
                 </>
               ) : (
-                'Create Account →'
+                "Create Account →"
               )}
             </button>
           </form>
 
-          {/* Already have account? */}
+          {/* Already have an account? */}
           <div className="mt-8 text-center text-sm text-gray-600">
             Already have an account?{" "}
             <button

@@ -13,11 +13,11 @@ export default function Header({ goToLogin, goToRegister, user, onLogout }) {
           <div className="flex items-center gap-2">
             <img
               src="/skillforge-logo.png"
-              alt="skillforge-logo"
+              alt="SkillForge"
               className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 object-contain"
             />
             <span className="text-lg sm:text-xl md:text-2xl font-bold">
-              Skillexa
+              SkillForge
             </span>
           </div>
 

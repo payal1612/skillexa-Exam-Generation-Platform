@@ -17,45 +17,16 @@ export default function ExamInterface({ examData, onExamComplete, onBack }) {
   const [flaggedQuestions, setFlaggedQuestions] = useState(new Set());
   const [showSubmitModal, setShowSubmitModal] = useState(false);
 
-  // Sample questions based on the exam data
-  const questions = [
-    {
-      id: 1,
-      question: "What key mechanism allows the Transformer model to weigh the importance of different words in the input sequence?",
-      options: [
-        "Recurrent Loop",
-        "Attention Mechanism",
-        "Convolutional Filter",
-        "Max-Pooling Layers"
-      ],
-      correctAnswer: 1,
-      explanation: "The attention mechanism is the core innovation of Transformers, allowing the model to focus on relevant parts of the input sequence when processing each token."
-    },
-    {
-      id: 2,
-      question: "In a Transformer architecture, what is the purpose of positional encoding?",
-      options: [
-        "To reduce computational complexity",
-        "To provide sequence order information",
-        "To normalize input values",
-        "To prevent overfitting"
-      ],
-      correctAnswer: 1,
-      explanation: "Since Transformers don't have inherent sequence order like RNNs, positional encoding is added to give the model information about token positions."
-    },
-    {
-      id: 3,
-      question: "Which component of the Transformer processes all positions simultaneously rather than sequentially?",
-      options: [
-        "LSTM layers",
-        "Self-attention mechanism",
-        "Recurrent connections",
-        "Sequential processing unit"
-      ],
-      correctAnswer: 1,
-      explanation: "Self-attention allows Transformers to process all positions in parallel, making them much more efficient than sequential models like RNNs."
-    }
-  ];
+  // Use AI-generated questions from examData, transform to expected format
+  const questions = (examData.questions || []).map((q, index) => ({
+    id: q.id || index + 1,
+    question: q.question,
+    options: q.options,
+    correctAnswer: q.options.findIndex(opt => 
+      q.correctAnswers?.includes(opt) || q.correctAnswers?.[0] === opt
+    ),
+    explanation: q.explanation || `The correct answer is: ${q.correctAnswers?.[0] || q.options[0]}`
+  }));
 
   // Timer effect
   useEffect(() => {

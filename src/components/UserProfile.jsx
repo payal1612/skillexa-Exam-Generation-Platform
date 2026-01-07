@@ -83,7 +83,8 @@ export default function UserProfile({ user, onUpdateUser, onBack }) {
                 onClick={onBack}
                 className="text-gray-600 hover:text-gray-900 transition-colors"
               >
-                ← Back to Dashboard
+                ← 
+                
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">User Profile</h1>

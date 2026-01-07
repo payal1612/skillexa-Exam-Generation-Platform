@@ -4,23 +4,7 @@ export default function Hero({ goToLogin, goToRegister }) {
   return (
     <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 bg-gradient-to-br from-violet-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto">
-        {/* Trust Indicators */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8 text-sm text-gray-600 mb-4">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-violet-600" />
-              <span>10,000+ Active Learners</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span>4.9/5 Rating</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-green-600" />
-              <span>ISO Certified</span>
-            </div>
-          </div>
-        </div>
+       
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Content */}
@@ -93,25 +77,7 @@ export default function Hero({ goToLogin, goToRegister }) {
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="mt-16 sm:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">50K+</div>
-            <div className="text-sm text-gray-600">Skills Mastered</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">95%</div>
-            <div className="text-sm text-gray-600">Success Rate</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">24/7</div>
-            <div className="text-sm text-gray-600">AI Support</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">100+</div>
-            <div className="text-sm text-gray-600">Skill Categories</div>
-          </div>
-        </div>
+        
       </div>
     </section>
   );
