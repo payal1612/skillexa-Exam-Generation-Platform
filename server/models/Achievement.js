@@ -25,7 +25,10 @@ const achievementSchema = new mongoose.Schema({
     default: 'common'
   },
   requirement: String,
-  icon: String,
+  icon: {
+    type: String,
+    default: 'Award'
+  },
   isActive: {
     type: Boolean,
     default: true

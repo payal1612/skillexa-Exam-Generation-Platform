@@ -9,9 +9,12 @@ const certificateSchema = new mongoose.Schema({
   skill: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Skill',
-    required: true
+    required: false  // Made optional for AI-generated exams
   },
-  skillName: String,
+  skillName: {
+    type: String,
+    required: true  // Use skillName as the primary identifier
+  },
   certificateId: {
     type: String,
     unique: true

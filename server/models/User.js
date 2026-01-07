@@ -40,9 +40,27 @@ const userSchema = new mongoose.Schema(
 
     stats: {
       examsCompleted: { type: Number, default: 0 },
+      examsPassed: { type: Number, default: 0 },
       certificatesEarned: { type: Number, default: 0 },
       skillsLearned: { type: Number, default: 0 },
       totalPoints: { type: Number, default: 0 },
+      totalScore: { type: Number, default: 0 },
+    },
+
+    // Gamification fields
+    gamification: {
+      xp: { type: Number, default: 0 },
+      level: { type: Number, default: 1 },
+      currentStreak: { type: Number, default: 0 },
+      longestStreak: { type: Number, default: 0 },
+      lastActivityDate: { type: Date },
+      dailyXpEarned: { type: Number, default: 0 },
+      dailyXpDate: { type: Date },
+      weeklyXp: { type: Number, default: 0 },
+      weeklyXpStartDate: { type: Date },
+      totalChallengesCompleted: { type: Number, default: 0 },
+      achievementsUnlocked: { type: Number, default: 0 },
+      rank: { type: String, default: 'Beginner' },
     },
 
     createdAt: {

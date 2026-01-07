@@ -12,12 +12,13 @@ const userAchievementSchema = new mongoose.Schema({
     required: true
   },
   unlockedAt: {
-    type: Date,
-    default: Date.now
+    type: Date
   },
   progress: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0,
+    max: 100
   },
   status: {
     type: String,
@@ -29,6 +30,19 @@ const userAchievementSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// Virtual for unlocked (for backward compatibility)
+userAchievementSchema.virtual('unlocked').get(function() {
+  return this.status === 'unlocked';
+});
+
+// Virtual for unlockedDate (for backward compatibility)
+userAchievementSchema.virtual('unlockedDate').get(function() {
+  return this.unlockedAt;
+});
+
+userAchievementSchema.set('toJSON', { virtuals: true });
+userAchievementSchema.set('toObject', { virtuals: true });
 
 userAchievementSchema.index({ user: 1, achievement: 1 }, { unique: true });
 

@@ -1,4 +1,4 @@
-import { config } from '../config/env.js';
+const isDevelopment = (process.env.NODE_ENV || 'development') === 'development';
 
 const logLevels = {
   ERROR: 'ERROR',
@@ -46,7 +46,7 @@ export const logger = {
     console.log(formatLog(logLevels.INFO, message, data));
   },
   debug: (message, data) => {
-    if (config.isDevelopment) {
+    if (isDevelopment) {
       console.log(formatLog(logLevels.DEBUG, message, data));
     }
   },

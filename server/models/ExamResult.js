@@ -9,11 +9,23 @@ const examResultSchema = new mongoose.Schema({
   exam: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Exam',
-    required: true
+    required: false // Made optional for AI-generated exams
+  },
+  skillName: {
+    type: String,
+    default: 'AI Generated Exam'
   },
   score: {
     type: Number,
     required: true
+  },
+  totalQuestions: {
+    type: Number,
+    default: 0
+  },
+  correctAnswers: {
+    type: Number,
+    default: 0
   },
   answers: [{
     questionIndex: Number,
@@ -21,14 +33,22 @@ const examResultSchema = new mongoose.Schema({
     isCorrect: Boolean
   }],
   timeTaken: Number,
+  timeSpent: Number,
+  passed: {
+    type: Boolean,
+    default: false
+  },
   status: {
     type: String,
-    enum: ['passed', 'failed'],
-    required: true
+    enum: ['passed', 'failed', 'completed', 'in-progress'],
+    default: 'completed'
   },
   attemptNumber: {
     type: Number,
     default: 1
+  },
+  completedAt: {
+    type: Date
   },
   createdAt: {
     type: Date,

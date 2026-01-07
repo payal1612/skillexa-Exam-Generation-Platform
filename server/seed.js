@@ -1,11 +1,15 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import User from './models/User.js';
 import Skill from './models/Skill.js';
 import Exam from './models/Exam.js';
 import Achievement from './models/Achievement.js';
 
-dotenv.config({ path: './server/.env' });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const seedData = async () => {
   try {
@@ -168,7 +172,8 @@ const seedData = async () => {
         category: 'milestone',
         points: 100,
         rarity: 'common',
-        requirement: 'Complete 1 exam'
+        requirement: 'Complete 1 exam',
+        icon: 'BookOpen'
       },
       {
         title: 'Quick Learner',
@@ -176,7 +181,8 @@ const seedData = async () => {
         category: 'performance',
         points: 250,
         rarity: 'uncommon',
-        requirement: 'Score 90%+ on first exam'
+        requirement: 'Score 90%+ on first exam',
+        icon: 'Zap'
       },
       {
         title: 'ML Novice',
@@ -184,7 +190,152 @@ const seedData = async () => {
         category: 'skill',
         points: 500,
         rarity: 'rare',
-        requirement: 'Complete 5 ML exams'
+        requirement: 'Complete 5 ML exams',
+        icon: 'Award'
+      },
+      {
+        title: 'Perfect Score',
+        description: 'Achieve 100% on any exam',
+        category: 'performance',
+        points: 750,
+        rarity: 'rare',
+        requirement: 'Score 100% on any exam',
+        icon: 'Star'
+      },
+      {
+        title: 'Speed Demon',
+        description: 'Complete an exam in under 15 minutes',
+        category: 'performance',
+        points: 400,
+        rarity: 'uncommon',
+        requirement: 'Complete exam in <15 minutes',
+        icon: 'Zap'
+      },
+      {
+        title: 'Knowledge Seeker',
+        description: 'Complete exams in 5 different skill areas',
+        category: 'milestone',
+        points: 600,
+        rarity: 'rare',
+        requirement: 'Complete exams in 5 skill areas',
+        icon: 'BookOpen'
+      },
+      {
+        title: 'Certified Professional',
+        description: 'Earn your first certificate',
+        category: 'milestone',
+        points: 500,
+        rarity: 'uncommon',
+        requirement: 'Earn 1 certificate',
+        icon: 'Award'
+      },
+      {
+        title: 'Rising Star',
+        description: 'Complete 10 exams',
+        category: 'milestone',
+        points: 800,
+        rarity: 'rare',
+        requirement: 'Complete 10 exams',
+        icon: 'Star'
+      },
+      {
+        title: 'AI Master',
+        description: 'Achieve mastery in all core AI skills',
+        category: 'skill',
+        points: 2500,
+        rarity: 'legendary',
+        requirement: 'Master all core AI skills',
+        icon: 'Crown'
+      },
+      {
+        title: 'Consistent Performer',
+        description: 'Score above 80% on 5 consecutive exams',
+        category: 'performance',
+        points: 600,
+        rarity: 'rare',
+        requirement: 'Score 80%+ on 5 consecutive exams',
+        icon: 'Target'
+      },
+      {
+        title: 'Streak Starter',
+        description: 'Maintain a 3-day learning streak',
+        category: 'participation',
+        points: 150,
+        rarity: 'common',
+        requirement: '3 day streak',
+        icon: 'Zap'
+      },
+      {
+        title: 'Week Warrior',
+        description: 'Maintain a 7-day learning streak',
+        category: 'participation',
+        points: 400,
+        rarity: 'uncommon',
+        requirement: '7 day streak',
+        icon: 'Zap'
+      },
+      {
+        title: 'Monthly Master',
+        description: 'Maintain a 30-day learning streak',
+        category: 'participation',
+        points: 1500,
+        rarity: 'epic',
+        requirement: '30 day streak',
+        icon: 'Crown'
+      },
+      {
+        title: 'Level 5 Achiever',
+        description: 'Reach Level 5',
+        category: 'milestone',
+        points: 300,
+        rarity: 'uncommon',
+        requirement: 'Reach Level 5',
+        icon: 'TrendingUp'
+      },
+      {
+        title: 'Level 10 Expert',
+        description: 'Reach Level 10',
+        category: 'milestone',
+        points: 750,
+        rarity: 'rare',
+        requirement: 'Reach Level 10',
+        icon: 'Star'
+      },
+      {
+        title: 'Level 20 Legend',
+        description: 'Reach Level 20',
+        category: 'milestone',
+        points: 2000,
+        rarity: 'legendary',
+        requirement: 'Reach Level 20',
+        icon: 'Crown'
+      },
+      {
+        title: 'Challenge Champion',
+        description: 'Complete your first challenge',
+        category: 'participation',
+        points: 200,
+        rarity: 'common',
+        requirement: 'Complete 1 challenge',
+        icon: 'Trophy'
+      },
+      {
+        title: 'XP Hunter',
+        description: 'Earn 1000 XP',
+        category: 'milestone',
+        points: 250,
+        rarity: 'uncommon',
+        requirement: 'Earn 1000 XP',
+        icon: 'Zap'
+      },
+      {
+        title: 'XP Master',
+        description: 'Earn 10000 XP',
+        category: 'milestone',
+        points: 1000,
+        rarity: 'epic',
+        requirement: 'Earn 10000 XP',
+        icon: 'Star'
       }
     ]);
 
@@ -193,7 +344,7 @@ const seedData = async () => {
     console.log(`  - Users: ${users.length}`);
     console.log(`  - Skills: ${skills.length}`);
     console.log('  - Exams: 2');
-    console.log('  - Achievements: 3');
+    console.log('  - Achievements: 20');
 
     console.log('\nTest Credentials:');
     console.log('  Admin: admin@example.com / password123');
