@@ -562,7 +562,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                 />
                 {!isSidebarCollapsed && (
                   <div>
-                    <h1 className="font-bold text-gray-900 text-lg">SkillForge</h1>
+                    <h1 className="font-bold text-gray-900 text-lg">Skilllexa</h1>
                     <p className="text-xs text-gray-500">Learning Platform</p>
                   </div>
                 )}
