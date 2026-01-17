@@ -1,10 +1,29 @@
-import { useState } from 'react';
-import { User, Mail, Calendar, MapPin, Phone, CreditCard as Edit3, Save, X, Camera, Award, Target, Clock, Star, Trophy, Zap, BookOpen, Settings, Shield, Bell, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { User, Mail, Calendar, MapPin, Phone, CreditCard as Edit3, Save, X, Camera, Award, Target, Clock, Star, Trophy, Zap, BookOpen, Settings, Shield, Bell, Eye, EyeOff, Sparkles, Plus, Search, GraduationCap } from 'lucide-react';
+
+// Skill suggestions for autocomplete
+const SKILL_SUGGESTIONS = [
+  'JavaScript', 'Python', 'Java', 'C++', 'TypeScript', 'Go', 'Rust', 'Ruby', 'PHP', 'Swift', 'Kotlin',
+  'React', 'Vue.js', 'Angular', 'Node.js', 'Express.js', 'Next.js', 'HTML', 'CSS', 'Tailwind CSS',
+  'Machine Learning', 'Deep Learning', 'Data Science', 'TensorFlow', 'PyTorch', 'NLP', 'Computer Vision',
+  'AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes', 'CI/CD', 'DevOps', 'Linux', 'Git',
+  'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firebase', 'SQL', 'NoSQL',
+  'React Native', 'Flutter', 'iOS Development', 'Android Development',
+  'GraphQL', 'REST API', 'Microservices', 'System Design', 'Data Structures', 'Algorithms',
+  'Cybersecurity', 'Blockchain', 'Web3', 'UI/UX Design', 'Figma'
+];
 
 export default function UserProfile({ user, onUpdateUser, onBack }) {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
+  const [knownSkills, setKnownSkills] = useState(user?.knownSkills || []);
+  const [skillsToLearn, setSkillsToLearn] = useState(user?.skillsToLearn || []);
+  const [newKnownSkill, setNewKnownSkill] = useState('');
+  const [newSkillToLearn, setNewSkillToLearn] = useState('');
+  const [savingSkills, setSavingSkills] = useState(false);
+  const [skillsMessage, setSkillsMessage] = useState('');
   const [formData, setFormData] = useState({
     name: user?.name || 'SkillMaster_42',
     email: user?.email || 'user@example.com',
@@ -67,10 +86,75 @@ export default function UserProfile({ user, onUpdateUser, onBack }) {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
+    { id: 'skills', label: 'Skills', icon: Target },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'achievements', label: 'Achievements', icon: Award }
   ];
+
+  // Skills management functions
+  const addKnownSkill = () => {
+    const skill = newKnownSkill.trim();
+    if (skill && !knownSkills.includes(skill) && !skillsToLearn.includes(skill)) {
+      setKnownSkills([...knownSkills, skill]);
+      setNewKnownSkill('');
+    }
+  };
+
+  const addSkillToLearn = () => {
+    const skill = newSkillToLearn.trim();
+    if (skill && !skillsToLearn.includes(skill) && !knownSkills.includes(skill)) {
+      setSkillsToLearn([...skillsToLearn, skill]);
+      setNewSkillToLearn('');
+    }
+  };
+
+  const removeKnownSkill = (skill) => {
+    setKnownSkills(knownSkills.filter(s => s !== skill));
+  };
+
+  const removeSkillToLearn = (skill) => {
+    setSkillsToLearn(skillsToLearn.filter(s => s !== skill));
+  };
+
+  const handleSaveSkills = async () => {
+    setSavingSkills(true);
+    setSkillsMessage('');
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const token = localStorage.getItem('token');
+      
+      const response = await axios.put(
+        `${apiUrl}/api/auth/skill-preferences`,
+        { knownSkills, skillsToLearn },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true
+        }
+      );
+
+      if (response.data.success) {
+        const updatedUser = { ...user, knownSkills, skillsToLearn, hasCompletedOnboarding: true };
+        localStorage.setItem('skillforge_user', JSON.stringify(updatedUser));
+        onUpdateUser(updatedUser);
+        setSkillsMessage('Skills updated successfully!');
+        setTimeout(() => setSkillsMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Failed to save skills:', error);
+      setSkillsMessage('Failed to save skills. Please try again.');
+    }
+    setSavingSkills(false);
+  };
+
+  const getFilteredSuggestions = (input, excludeList1, excludeList2) => {
+    if (!input) return [];
+    return SKILL_SUGGESTIONS.filter(skill =>
+      skill.toLowerCase().includes(input.toLowerCase()) &&
+      !excludeList1.includes(skill) &&
+      !excludeList2.includes(skill)
+    ).slice(0, 5);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -287,6 +371,170 @@ export default function UserProfile({ user, onUpdateUser, onBack }) {
                         </button>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Skills Tab */}
+                {activeTab === 'skills' && (
+                  <div className="space-y-8">
+                    {/* Skills Message */}
+                    {skillsMessage && (
+                      <div className={`p-4 rounded-lg ${skillsMessage.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {skillsMessage}
+                      </div>
+                    )}
+
+                    {/* Known Skills */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                          <Target className="w-5 h-5 text-green-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Skills You Know</h3>
+                          <p className="text-sm text-gray-500">Skills you're already proficient in</p>
+                        </div>
+                      </div>
+
+                      {/* Add Known Skill Input */}
+                      <div className="flex gap-2 mb-4">
+                        <div className="flex-1 relative">
+                          <input
+                            type="text"
+                            value={newKnownSkill}
+                            onChange={(e) => setNewKnownSkill(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && addKnownSkill()}
+                            placeholder="Add a skill you know..."
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                          />
+                          {newKnownSkill && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+                              {getFilteredSuggestions(newKnownSkill, knownSkills, skillsToLearn).map((skill, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => { setNewKnownSkill(skill); }}
+                                  className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm"
+                                >
+                                  {skill}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={addKnownSkill}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add
+                        </button>
+                      </div>
+
+                      {/* Known Skills List */}
+                      <div className="flex flex-wrap gap-2">
+                        {knownSkills.map((skill, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium"
+                          >
+                            {skill}
+                            <button onClick={() => removeKnownSkill(skill)} className="hover:opacity-70">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </span>
+                        ))}
+                        {knownSkills.length === 0 && (
+                          <p className="text-gray-400 italic">No skills added yet</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Skills to Learn */}
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+                          <GraduationCap className="w-5 h-5 text-violet-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Skills You Want to Learn</h3>
+                          <p className="text-sm text-gray-500">We'll personalize exams and courses for these</p>
+                        </div>
+                      </div>
+
+                      {/* Add Skill to Learn Input */}
+                      <div className="flex gap-2 mb-4">
+                        <div className="flex-1 relative">
+                          <input
+                            type="text"
+                            value={newSkillToLearn}
+                            onChange={(e) => setNewSkillToLearn(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && addSkillToLearn()}
+                            placeholder="Add a skill you want to learn..."
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                          />
+                          {newSkillToLearn && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+                              {getFilteredSuggestions(newSkillToLearn, skillsToLearn, knownSkills).map((skill, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => { setNewSkillToLearn(skill); }}
+                                  className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm"
+                                >
+                                  {skill}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={addSkillToLearn}
+                          className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add
+                        </button>
+                      </div>
+
+                      {/* Skills to Learn List */}
+                      <div className="flex flex-wrap gap-2">
+                        {skillsToLearn.map((skill, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-violet-100 text-violet-700 rounded-full text-sm font-medium"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            {skill}
+                            <button onClick={() => removeSkillToLearn(skill)} className="hover:opacity-70">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </span>
+                        ))}
+                        {skillsToLearn.length === 0 && (
+                          <p className="text-gray-400 italic">No learning goals added yet</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Save Button */}
+                    <div className="flex justify-end pt-4 border-t border-gray-200">
+                      <button
+                        onClick={handleSaveSkills}
+                        disabled={savingSkills}
+                        className="px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {savingSkills ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4" />
+                            Save Skill Preferences
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 )}
 

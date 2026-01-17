@@ -47,6 +47,9 @@ export const register = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        knownSkills: user.knownSkills || [],
+        skillsToLearn: user.skillsToLearn || [],
+        hasCompletedOnboarding: user.hasCompletedOnboarding || false
       },
     });
   } catch (error) {
@@ -100,6 +103,9 @@ export const login = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        knownSkills: user.knownSkills || [],
+        skillsToLearn: user.skillsToLearn || [],
+        hasCompletedOnboarding: user.hasCompletedOnboarding || false
       },
     });
   } catch (error) {
@@ -138,4 +144,46 @@ export const logout = (req, res) => {
     success: true,
     message: "Logged out successfully",
   });
+};
+
+// =========================
+// UPDATE SKILL PREFERENCES (Onboarding)
+// =========================
+export const updateSkillPreferences = async (req, res, next) => {
+  try {
+    const { knownSkills, skillsToLearn } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        knownSkills: knownSkills || [],
+        skillsToLearn: skillsToLearn || [],
+        hasCompletedOnboarding: true
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Skill preferences updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        knownSkills: user.knownSkills,
+        skillsToLearn: user.skillsToLearn,
+        hasCompletedOnboarding: user.hasCompletedOnboarding
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
 };

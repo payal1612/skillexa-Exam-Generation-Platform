@@ -11,7 +11,6 @@ export const getUserCertificates = async (req, res, next) => {
     // Populate skill only if it exists, and add skillName as fallback
     certificates = await Promise.all(certificates.map(async (cert) => {
       const certObj = cert.toObject();
-      console.log('Certificate skillName:', certObj.skillName, 'skill:', certObj.skill);
       if (cert.skill) {
         try {
           await cert.populate('skill', 'title');
@@ -23,8 +22,6 @@ export const getUserCertificates = async (req, res, next) => {
       }
       return certObj;
     }));
-
-    console.log('Fetched certificates for user:', req.user.id, 'Count:', certificates.length);
 
     res.status(200).json({
       success: true,

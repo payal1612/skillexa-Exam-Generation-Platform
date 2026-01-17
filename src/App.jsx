@@ -290,6 +290,7 @@ import CoursesPage from "./components/CoursesPage.jsx";
 import ChallengesPage from "./components/ChallengesPage.jsx";
 import CareerRoadmapPage from "./components/CareerRoadmapPage.jsx";
 import TestimonialsPage from "./components/TestimonialsPage.jsx";
+import SkillsOnboarding from "./components/SkillsOnboarding.jsx";
 import Header from "./components/Header.jsx";
 import Chatbot from "./components/Chatbot.jsx";
 import { GamificationNotificationProvider } from "./components/GamificationNotification.jsx";
@@ -364,18 +365,44 @@ function App() {
     }
   };
 
-  // Register handler
+  // Register handler - now redirects to onboarding
   const handleRegister = (userData) => {
     if (!userData?.email) return;
 
     try {
       setUser(userData);
       setIsAuthenticated(true);
-      setCurrentPage("dashboard");
+      // Redirect to skills onboarding instead of dashboard
+      setCurrentPage("skills-onboarding");
       localStorage.setItem("skillforge_user", JSON.stringify(userData));
       localStorage.setItem("skillforge_auth", "true");
     } catch (error) {
       console.error("Register error:", error);
+    }
+  };
+
+  // Handle onboarding completion
+  const handleOnboardingComplete = (updatedUser) => {
+    try {
+      setUser(updatedUser);
+      localStorage.setItem("skillforge_user", JSON.stringify(updatedUser));
+      setCurrentPage("dashboard");
+    } catch (error) {
+      console.error("Onboarding complete error:", error);
+      setCurrentPage("dashboard");
+    }
+  };
+
+  // Handle onboarding skip
+  const handleOnboardingSkip = () => {
+    try {
+      const updatedUser = { ...user, hasCompletedOnboarding: true };
+      setUser(updatedUser);
+      localStorage.setItem("skillforge_user", JSON.stringify(updatedUser));
+      setCurrentPage("dashboard");
+    } catch (error) {
+      console.error("Onboarding skip error:", error);
+      setCurrentPage("dashboard");
     }
   };
 
@@ -543,6 +570,15 @@ function App() {
         />
       )}
 
+      {/* Skills Onboarding - shown after registration */}
+      {currentPage === "skills-onboarding" && isAuthenticated && (
+        <SkillsOnboarding
+          user={user}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+
       {/* Protected Routes */}
       {currentPage === "dashboard" && isAuthenticated && (
         <Dashboard
@@ -613,7 +649,7 @@ function App() {
 
       {/* Career Roadmap Page */}
       {currentPage === "career-roadmap" && isAuthenticated && (
-        <CareerRoadmapPage onBack={goToDashboard} />
+        <CareerRoadmapPage onBack={goToDashboard} onStartExam={handleStartExam} />
       )}
 
       {/* Testimonials Page */}

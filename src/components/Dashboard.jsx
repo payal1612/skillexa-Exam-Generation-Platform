@@ -884,6 +884,83 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                   </div>
                 </section>
 
+                {/* Your Skills Section - Shows user's skill preferences */}
+                {(user?.skillsToLearn?.length > 0 || user?.knownSkills?.length > 0) && (
+                  <section className="bg-gradient-to-r from-violet-50 via-purple-50 to-blue-50 rounded-2xl p-6 border border-violet-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl flex items-center justify-center">
+                          <Sparkles className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900">Your Learning Path</h3>
+                          <p className="text-sm text-gray-500">Skills tailored just for you</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => onNavigate('profile')}
+                        className="text-violet-600 hover:text-violet-700 text-sm font-medium flex items-center gap-1"
+                      >
+                        Edit Skills <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {/* Skills to Learn */}
+                      {user?.skillsToLearn?.length > 0 && (
+                        <div className="bg-white rounded-xl p-4 border border-violet-100">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Target className="w-4 h-4 text-violet-600" />
+                            <span className="text-sm font-semibold text-gray-700">Learning Goals</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {user.skillsToLearn.slice(0, 6).map((skill, index) => (
+                              <button
+                                key={index}
+                                onClick={() => onNavigate('exam-generator')}
+                                className="px-3 py-1.5 bg-violet-100 text-violet-700 rounded-full text-sm font-medium hover:bg-violet-200 transition-colors"
+                              >
+                                {skill}
+                              </button>
+                            ))}
+                            {user.skillsToLearn.length > 6 && (
+                              <span className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-sm">
+                                +{user.skillsToLearn.length - 6} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Known Skills */}
+                      {user?.knownSkills?.length > 0 && (
+                        <div className="bg-white rounded-xl p-4 border border-green-100">
+                          <div className="flex items-center gap-2 mb-3">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span className="text-sm font-semibold text-gray-700">Your Expertise</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {user.knownSkills.slice(0, 6).map((skill, index) => (
+                              <button
+                                key={index}
+                                onClick={() => onNavigate('exam-generator')}
+                                className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors"
+                              >
+                                {skill}
+                              </button>
+                            ))}
+                            {user.knownSkills.length > 6 && (
+                              <span className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-sm">
+                                +{user.knownSkills.length - 6} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
+
                 {/* Quick Actions */}
                 <section className="quick-actions">
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>

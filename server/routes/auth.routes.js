@@ -4,6 +4,7 @@ import {
   login,
   getCurrentUser,
   logout,
+  updateSkillPreferences,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 
@@ -16,5 +17,6 @@ router.post("/login", login);
 // Private Routes
 router.get("/me", protect, getCurrentUser);
 router.post("/logout", protect, logout);
+router.put("/skill-preferences", protect, updateSkillPreferences);
 
 export default router;

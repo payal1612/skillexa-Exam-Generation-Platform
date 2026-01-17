@@ -63,6 +63,22 @@ const userSchema = new mongoose.Schema(
       rank: { type: String, default: 'Beginner' },
     },
 
+    // Skill preferences (from onboarding)
+    knownSkills: [{
+      type: String,
+      trim: true
+    }],
+    
+    skillsToLearn: [{
+      type: String,
+      trim: true
+    }],
+    
+    hasCompletedOnboarding: {
+      type: Boolean,
+      default: false
+    },
+
     createdAt: {
       type: Date,
       default: Date.now,

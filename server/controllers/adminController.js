@@ -1143,7 +1143,7 @@ export const getRecentActivity = async (req, res, next) => {
     // Get recent exam results
     const recentExams = await ExamResult.find()
       .populate('user', 'name email')
-      .populate('exam', 'title')
+      .populate('exam', 'title skillName')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit));
 
@@ -1164,10 +1164,10 @@ export const getRecentActivity = async (req, res, next) => {
     const activities = [
       ...recentExams.map(r => ({
         type: 'exam',
-        action: r.status === 'passed' ? 'passed' : 'failed',
+        action: r.status === 'passed' || (r.status === 'completed' && r.score >= 60) ? 'passed' : 'failed',
         user: r.user?.name || 'Unknown',
         email: r.user?.email,
-        target: r.exam?.title || 'Unknown Exam',
+        target: r.skillName || r.exam?.skillName || r.exam?.title || 'AI Generated Exam',
         score: r.score,
         date: r.createdAt
       })),

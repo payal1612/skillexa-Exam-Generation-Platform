@@ -1422,7 +1422,7 @@ export default function AdminPanel({ onBack, onHome }) {
                         <thead>
                           <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">User</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Exam</th>
+                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Skill</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Score</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Time</th>
@@ -1445,8 +1445,8 @@ export default function AdminPanel({ onBack, onHome }) {
                                 </div>
                               </td>
                               <td className="px-6 py-4">
-                                <div className="font-medium text-gray-900">{result.exam?.title || 'Unknown'}</div>
-                                <div className="text-sm text-gray-500">{result.exam?.skillName}</div>
+                                <div className="font-medium text-gray-900">{result.skillName || result.exam?.skillName || result.exam?.title || 'Unknown'}</div>
+                                <div className="text-sm text-gray-500">{result.exam?.difficulty || 'AI Generated'}</div>
                               </td>
                               <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
@@ -1459,16 +1459,16 @@ export default function AdminPanel({ onBack, onHome }) {
                               </td>
                               <td className="px-6 py-4">
                                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg ${
-                                  result.status === 'passed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                                  (result.status === 'passed' || (result.status === 'completed' && result.score >= 60)) ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                                 }`}>
-                                  {result.status === 'passed' ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-                                  {result.status}
+                                  {(result.status === 'passed' || (result.status === 'completed' && result.score >= 60)) ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+                                  {result.status === 'completed' ? (result.score >= 60 ? 'Passed' : 'Failed') : result.status}
                                 </span>
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-600">
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-4 h-4 text-gray-400" />
-                                  {result.timeTaken ? `${Math.floor(result.timeTaken / 60)}m ${result.timeTaken % 60}s` : 'N/A'}
+                                  {(result.timeSpent || result.timeTaken) ? `${Math.floor((result.timeSpent || result.timeTaken) / 60)}m ${(result.timeSpent || result.timeTaken) % 60}s` : 'N/A'}
                                 </span>
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-500">
@@ -2625,7 +2625,7 @@ export default function AdminPanel({ onBack, onHome }) {
                             {result.score}%
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{result.exam?.title || 'Unknown Exam'}</p>
+                            <p className="font-medium text-gray-900">{result.skillName || result.exam?.skillName || result.exam?.title || 'Unknown Skill'}</p>
                             <p className="text-xs text-gray-500">{new Date(result.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                           </div>
                         </div>

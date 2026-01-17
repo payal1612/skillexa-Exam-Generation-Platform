@@ -15,12 +15,18 @@ const ZOOM_CLIENT_SECRET = process.env.ZOOM_CLIENT_SECRET;
 // Cache for access token
 let accessToken = null;
 let tokenExpiry = null;
+let zoomConfigError = false; // Track if Zoom config is invalid
 
 /**
  * Get Zoom OAuth Access Token (Server-to-Server OAuth)
  */
 export const getZoomAccessToken = async () => {
   try {
+    // If we already know Zoom config is invalid, skip API call
+    if (zoomConfigError) {
+      return null;
+    }
+
     // Return cached token if still valid
     if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
       return accessToken;
@@ -28,7 +34,8 @@ export const getZoomAccessToken = async () => {
 
     // Check if credentials are configured
     if (!ZOOM_ACCOUNT_ID || !ZOOM_CLIENT_ID || !ZOOM_CLIENT_SECRET) {
-      console.warn('Zoom credentials not configured - using mock mode');
+      console.warn('Zoom credentials not configured - using mock meetings');
+      zoomConfigError = true;
       return null;
     }
 
@@ -51,10 +58,19 @@ export const getZoomAccessToken = async () => {
     accessToken = response.data.access_token;
     // Token expires in 1 hour, refresh 5 minutes early
     tokenExpiry = Date.now() + (response.data.expires_in - 300) * 1000;
+    zoomConfigError = false;
 
+    console.log('Zoom access token obtained successfully');
     return accessToken;
   } catch (error) {
-    console.error('Failed to get Zoom access token:', error.response?.data || error.message);
+    const errorData = error.response?.data;
+    // If invalid_client error, mark as config error to prevent repeated attempts
+    if (errorData?.error === 'invalid_client' || errorData?.error === 'invalid_grant') {
+      console.warn('Zoom credentials are invalid - using mock meetings. To fix: Update Zoom credentials in .env or create new Server-to-Server OAuth app at https://marketplace.zoom.us/');
+      zoomConfigError = true;
+    } else {
+      console.error('Zoom auth error:', errorData?.error || error.message);
+    }
     return null;
   }
 };

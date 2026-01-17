@@ -118,9 +118,21 @@ export const updateUserStreak = async (req, res, next) => {
     let bonusXp = 0;
 
     if (streakResult.streakUpdated) {
+      // Use atomic update for streak to avoid version conflicts
+      const updateData = {
+        'gamification.currentStreak': streakResult.newStreak,
+        'gamification.lastActivityDate': new Date()
+      };
+      
+      if (streakResult.longestStreak) {
+        updateData['gamification.longestStreak'] = streakResult.longestStreak;
+      }
+
+      await User.findByIdAndUpdate(user._id, { $set: updateData });
+      
+      // Update local user object
       user.gamification.currentStreak = streakResult.newStreak;
       user.gamification.lastActivityDate = new Date();
-      
       if (streakResult.longestStreak) {
         user.gamification.longestStreak = streakResult.longestStreak;
       }
@@ -133,8 +145,6 @@ export const updateUserStreak = async (req, res, next) => {
       
       if (xpAwarded + bonusXp > 0) {
         await awardXp(user, xpAwarded + bonusXp, 'daily_streak');
-      } else {
-        await user.save();
       }
     }
 

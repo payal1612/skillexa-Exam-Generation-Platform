@@ -139,15 +139,6 @@ export const awardXp = async (user, xpAmount, reason = 'activity') => {
   const newLevel = calculateLevel(newXp);
   const leveledUp = newLevel > oldLevel;
   
-  // Update user gamification stats
-  user.gamification = {
-    ...user.gamification,
-    xp: newXp,
-    level: newLevel,
-    rank: getRank(newLevel).name,
-    lastActivityDate: new Date()
-  };
-  
   // Update daily XP
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -155,20 +146,40 @@ export const awardXp = async (user, xpAmount, reason = 'activity') => {
     ? new Date(user.gamification.dailyXpDate)
     : null;
   
+  let dailyXpEarned = xpAmount;
+  let newDailyXpDate = today;
+  
   if (dailyXpDate) {
     dailyXpDate.setHours(0, 0, 0, 0);
     if (dailyXpDate.getTime() === today.getTime()) {
-      user.gamification.dailyXpEarned = (user.gamification.dailyXpEarned || 0) + xpAmount;
-    } else {
-      user.gamification.dailyXpEarned = xpAmount;
-      user.gamification.dailyXpDate = today;
+      dailyXpEarned = (user.gamification.dailyXpEarned || 0) + xpAmount;
+      newDailyXpDate = user.gamification.dailyXpDate;
     }
-  } else {
-    user.gamification.dailyXpEarned = xpAmount;
-    user.gamification.dailyXpDate = today;
   }
   
-  await user.save();
+  // Use findOneAndUpdate with atomic operations to avoid version conflicts
+  const User = (await import('../models/User.js')).default;
+  await User.findByIdAndUpdate(
+    user._id,
+    {
+      $set: {
+        'gamification.xp': newXp,
+        'gamification.level': newLevel,
+        'gamification.rank': getRank(newLevel).name,
+        'gamification.lastActivityDate': new Date(),
+        'gamification.dailyXpEarned': dailyXpEarned,
+        'gamification.dailyXpDate': newDailyXpDate
+      }
+    },
+    { new: true }
+  );
+  
+  // Update the user object in memory to reflect changes
+  user.gamification.xp = newXp;
+  user.gamification.level = newLevel;
+  user.gamification.rank = getRank(newLevel).name;
+  user.gamification.dailyXpEarned = dailyXpEarned;
+  user.gamification.dailyXpDate = newDailyXpDate;
   
   return {
     xpAwarded: xpAmount,

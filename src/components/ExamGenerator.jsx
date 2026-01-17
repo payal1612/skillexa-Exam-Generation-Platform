@@ -1,53 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   ArrowLeft, 
   Brain, 
   Clock, 
   Target, 
-  ChevronDown, 
   Zap, 
   BookOpen,
   Settings,
-  Play,
-  Info
+  Info,
+  Sparkles,
+  Star,
+  Plus,
+  X
 } from 'lucide-react';
 import './ExamGenerator.css';
 
 export default function ExamGenerator({ onBack, onStartExam }) {
-  const [selectedSkill, setSelectedSkill] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [skillInput, setSkillInput] = useState('');
   const [difficultyLevel, setDifficultyLevel] = useState('Expert');
   const [numQuestions, setNumQuestions] = useState(15);
   const [timeLimit, setTimeLimit] = useState(30);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [userSkillsToLearn, setUserSkillsToLearn] = useState([]);
+  const [userKnownSkills, setUserKnownSkills] = useState([]);
 
-  const skills = [
-    {
-      id: 'nlp',
-      name: 'Natural Language Processing (NLP)',
-      description: 'Focuses on transformer models, embeddings, sentiment analysis, and sequence-to-sequence tasks.',
-      categories: ['Transformers', 'Embeddings', 'Sentiment Analysis', 'Text Classification', 'Language Models']
-    },
-    {
-      id: 'cv',
-      name: 'Computer Vision',
-      description: 'Deep dive into CNNs, image recognition, object detection, and image processing.',
-      categories: ['CNNs', 'Object Detection', 'Image Classification', 'GANs', 'Image Processing']
-    },
-    {
-      id: 'ml',
-      name: 'Machine Learning Fundamentals',
-      description: 'Core ML concepts including supervised/unsupervised learning, algorithms, and evaluation.',
-      categories: ['Supervised Learning', 'Unsupervised Learning', 'Model Evaluation', 'Feature Engineering', 'Algorithms']
-    },
-    {
-      id: 'dl',
-      name: 'Deep Learning',
-      description: 'Neural networks, backpropagation, optimization, and advanced architectures.',
-      categories: ['Neural Networks', 'Backpropagation', 'Optimization', 'Regularization', 'Architectures']
+  // Load user's skill preferences from localStorage
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('skillforge_user');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        setUserSkillsToLearn(userData.skillsToLearn || []);
+        setUserKnownSkills(userData.knownSkills || []);
+      }
+    } catch (error) {
+      console.error('Error loading user skills:', error);
     }
-  ];
+  }, []);
 
   const difficultyLevels = [
     { id: 'Novice', label: 'Novice', color: 'bg-green-100 text-green-800', description: 'Basic concepts and fundamentals' },
@@ -56,11 +46,17 @@ export default function ExamGenerator({ onBack, onStartExam }) {
     { id: 'Master', label: 'Master', color: 'bg-purple-100 text-purple-800', description: 'Cutting-edge research and innovation' }
   ];
 
-  const selectedSkillData = skills.find(skill => skill.id === selectedSkill);
+  const handleSkillSelect = (skill) => {
+    setSkillInput(skill);
+  };
+
+  const handleClearSkill = () => {
+    setSkillInput('');
+  };
 
   const handleGenerateExam = async () => {
-    if (!selectedSkill || !selectedCategory) {
-      alert('Please select both a skill and category');
+    if (!skillInput.trim()) {
+      alert('Please enter a skill to generate exam');
       return;
     }
 
@@ -87,20 +83,14 @@ export default function ExamGenerator({ onBack, onStartExam }) {
       };
       const difficulty = difficultyMap[difficultyLevel.toLowerCase()] || 'medium';
       
-      // Get full skill name for better AI generation
-      const skillNames = {
-        'nlp': 'Natural Language Processing',
-        'cv': 'Computer Vision',
-        'ml': 'Machine Learning',
-        'dl': 'Deep Learning'
-      };
-      const subjectName = skillNames[selectedSkill] || selectedSkill;
+      const subjectName = skillInput.trim();
+      const topics = [skillInput.trim()];
 
       const response = await axios.post(
         `${apiBase}/api/exam/generate`,
         {
           subject: subjectName,
-          topics: [selectedCategory].filter(Boolean),
+          topics: topics,
           difficulty,
           totalQuestions: numQuestions,
           mcqCount,
@@ -119,7 +109,7 @@ export default function ExamGenerator({ onBack, onStartExam }) {
 
       onStartExam({
         skill: generatedExam.examMeta?.subject || subjectName,
-        category: selectedCategory,
+        category: skillInput.trim(),
         difficulty: generatedExam.examMeta?.difficulty || difficultyLevel,
         questions: generatedExam.questions,
         timeLimit: generatedExam.examMeta?.durationMinutes || timeLimit
@@ -159,88 +149,100 @@ export default function ExamGenerator({ onBack, onStartExam }) {
       <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="p-6 sm:p-8">
-            {/* Select Skill */}
+            {/* Enter Skill */}
             <div className="mb-8">
               <label className="block text-lg font-bold text-gray-900 mb-4">
-                Select Skill
-              </label>
-              <div className="grid gap-4">
-                {skills.map((skill) => (
-                  <div
-                    key={skill.id}
-                    onClick={() => {
-                      setSelectedSkill(skill.id);
-                      setSelectedCategory(''); // Reset category when skill changes
-                    }}
-                    className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      selectedSkill === skill.id
-                        ? 'border-violet-500 bg-violet-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-2">{skill.name}</h3>
-                        <p className="text-sm text-gray-600 mb-3">{skill.description}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {skill.categories.slice(0, 3).map((category, index) => (
-                            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                              {category}
-                            </span>
-                          ))}
-                          {skill.categories.length > 3 && (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                              +{skill.categories.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        selectedSkill === skill.id
-                          ? 'border-violet-500 bg-violet-500'
-                          : 'border-gray-300'
-                      }`}>
-                        {selectedSkill === skill.id && (
-                          <div className="w-2 h-2 bg-white rounded-full"></div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Topic Category */}
-            {selectedSkillData && (
-              <div className="mb-8">
-                <label className="block text-lg font-bold text-gray-900 mb-4">
-                  Topic Category
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none appearance-none bg-white"
-                  >
-                    <option value="">Select a category...</option>
-                    {selectedSkillData.categories.map((category) => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-violet-600" />
+                  Enter Skill to Test
                 </div>
-                {selectedCategory && (
-                  <p className="mt-2 text-sm text-gray-600">
-                    {selectedCategory === 'Transformers' && 'Focuses on transformer models, embeddings, sentiment analysis, and sequence-to-sequence tasks.'}
-                    {selectedCategory === 'CNNs' && 'Convolutional Neural Networks for image processing and computer vision tasks.'}
-                    {selectedCategory === 'Supervised Learning' && 'Algorithms that learn from labeled training data to make predictions.'}
-                    {selectedCategory === 'Neural Networks' && 'Fundamental concepts of artificial neural networks and deep learning.'}
-                    {!['Transformers', 'CNNs', 'Supervised Learning', 'Neural Networks'].includes(selectedCategory) && 
-                     `Advanced topics in ${selectedCategory} with practical applications and theoretical foundations.`}
-                  </p>
+              </label>
+              
+              {/* Skill Input Field */}
+              <div className="relative mb-4">
+                <input
+                  type="text"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  placeholder="Enter any skill (e.g., React, Python, AWS, Docker, Machine Learning...)"
+                  className="w-full px-4 py-4 pr-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none text-lg transition-all"
+                />
+                {skillInput && (
+                  <button
+                    onClick={handleClearSkill}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 )}
               </div>
-            )}
+              <p className="text-sm text-gray-500 mb-6">
+                <Sparkles className="w-4 h-4 inline mr-1 text-violet-500" />
+                Our AI will generate personalized questions for any skill you enter
+              </p>
+
+              {/* User's Skills to Learn - Quick Selection */}
+              {userSkillsToLearn.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Star className="w-5 h-5 text-violet-600" />
+                    <span className="text-sm font-medium text-violet-700">Skills you want to learn</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {userSkillsToLearn.map((skill, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSkillSelect(skill)}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border-2 flex items-center gap-1 ${
+                          skillInput === skill
+                            ? 'border-violet-500 bg-violet-100 text-violet-700'
+                            : 'border-violet-200 bg-violet-50 text-violet-700 hover:border-violet-400 hover:bg-violet-100'
+                        }`}
+                      >
+                        <Plus className="w-3 h-3" />
+                        {skill}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* User's Known Skills - Quick Selection */}
+              {userKnownSkills.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <BookOpen className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-700">Test your expertise</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {userKnownSkills.map((skill, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSkillSelect(skill)}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border-2 flex items-center gap-1 ${
+                          skillInput === skill
+                            ? 'border-green-500 bg-green-100 text-green-700'
+                            : 'border-green-200 bg-green-50 text-green-700 hover:border-green-400 hover:bg-green-100'
+                        }`}
+                      >
+                        <Plus className="w-3 h-3" />
+                        {skill}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No saved skills message */}
+              {userSkillsToLearn.length === 0 && userKnownSkills.length === 0 && (
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <p className="text-sm text-gray-600">
+                    <Info className="w-4 h-4 inline mr-1" />
+                    Tip: Complete your profile to see your saved skills here for quick selection!
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Difficulty Level */}
             <div className="mb-8">
@@ -314,7 +316,7 @@ export default function ExamGenerator({ onBack, onStartExam }) {
             </div>
 
             {/* Exam Preview */}
-            {selectedSkill && selectedCategory && (
+            {skillInput.trim() && (
               <div className="mb-8 p-6 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200">
                 <div className="flex items-center gap-3 mb-4">
                   <Info className="w-5 h-5 text-violet-600" />
@@ -323,19 +325,19 @@ export default function ExamGenerator({ onBack, onStartExam }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-violet-600" />
-                    <span className="text-gray-700">Skill: {selectedSkillData?.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-violet-600" />
-                    <span className="text-gray-700">Category: {selectedCategory}</span>
+                    <span className="text-gray-700">Skill: {skillInput}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Settings className="w-4 h-4 text-violet-600" />
                     <span className="text-gray-700">Level: {difficultyLevel}</span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-violet-600" />
+                    <span className="text-gray-700">{numQuestions} questions</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-violet-600" />
-                    <span className="text-gray-700">{numQuestions} questions, {timeLimit} minutes</span>
+                    <span className="text-gray-700">{timeLimit} minutes</span>
                   </div>
                 </div>
               </div>
@@ -351,7 +353,7 @@ export default function ExamGenerator({ onBack, onStartExam }) {
               </button>
               <button
                 onClick={handleGenerateExam}
-                disabled={!selectedSkill || !selectedCategory || isGenerating}
+                disabled={!skillInput.trim() || isGenerating}
                 className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
               >
                 {isGenerating ? (

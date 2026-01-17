@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   BookOpen, 
   Play, 
@@ -19,13 +19,31 @@ import {
   Smartphone,
   Palette,
   BarChart3,
-  Cpu
+  Cpu,
+  Sparkles,
+  Target
 } from 'lucide-react';
 
 export default function CoursesPage({ onBack }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
+  const [userSkillsToLearn, setUserSkillsToLearn] = useState([]);
+  const [userKnownSkills, setUserKnownSkills] = useState([]);
+
+  // Load user's skill preferences
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem('skillforge_user');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        setUserSkillsToLearn(userData.skillsToLearn || []);
+        setUserKnownSkills(userData.knownSkills || []);
+      }
+    } catch (error) {
+      console.error('Error loading user skills:', error);
+    }
+  }, []);
 
   const categories = [
     { id: 'all', name: 'All Courses', icon: BookOpen },
@@ -283,6 +301,21 @@ export default function CoursesPage({ onBack }) {
     return matchesSearch && matchesCategory && matchesLevel;
   });
 
+  // Get recommended courses based on user's skills to learn
+  const getRecommendedCourses = () => {
+    if (userSkillsToLearn.length === 0) return [];
+    
+    return courses.filter(course => {
+      const courseText = `${course.title} ${course.description} ${course.tags.join(' ')}`.toLowerCase();
+      return userSkillsToLearn.some(skill => 
+        courseText.includes(skill.toLowerCase()) ||
+        skill.toLowerCase().split(' ').some(word => courseText.includes(word))
+      );
+    }).slice(0, 4);
+  };
+
+  const recommendedCourses = getRecommendedCourses();
+
   const getLevelColor = (level) => {
     switch (level) {
       case 'beginner': return 'bg-green-100 text-green-700';
@@ -390,6 +423,78 @@ export default function CoursesPage({ onBack }) {
             <Filter className="w-4 h-4" />
             <span>Sorted by popularity</span>
           </div>
+        </div>
+
+        {/* Recommended Courses Section */}
+        {recommendedCourses.length > 0 && searchQuery === '' && selectedCategory === 'all' && (
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <Sparkles className="w-6 h-6 text-violet-600" />
+              <h2 className="text-xl font-bold text-gray-900">Recommended for You</h2>
+              <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium">
+                Based on skills you want to learn
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {recommendedCourses.map(course => (
+                <div
+                  key={`rec-${course.id}`}
+                  onClick={() => handleCourseClick(course.youtubeUrl)}
+                  className="group bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl shadow-sm border-2 border-violet-200 overflow-hidden cursor-pointer hover:shadow-xl hover:border-violet-400 transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  {/* Thumbnail */}
+                  <div className="relative aspect-video overflow-hidden">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.target.src = `https://via.placeholder.com/480x270/8b5cf6/ffffff?text=${encodeURIComponent(course.title.substring(0, 20))}`;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-4 left-4 flex items-center gap-2 text-white">
+                        <Play className="w-8 h-8" />
+                        <span className="font-medium">Watch Now</span>
+                      </div>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(course.level)}`}>
+                        {course.level}
+                      </span>
+                    </div>
+                    <div className="absolute top-2 left-2">
+                      <span className="px-2 py-1 bg-violet-600 text-white rounded-full text-xs font-medium flex items-center gap-1">
+                        <Star className="w-3 h-3" /> Recommended
+                      </span>
+                    </div>
+                  </div>
+                  {/* Content */}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-violet-600 transition-colors">
+                      {course.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-2">{course.instructor}</p>
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {course.duration}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Star className="w-3 h-3 text-yellow-500" />
+                        {course.rating}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* All Courses Section */}
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-gray-900">All Courses</h2>
         </div>
 
         {/* Courses Grid */}

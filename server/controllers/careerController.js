@@ -274,19 +274,81 @@ const careerPaths = {
   }
 };
 
+// Generate custom roadmap using AI
+const generateCustomRoadmapContent = async (careerGoal, currentLevel) => {
+  const levelWeeks = {
+    beginner: 24,
+    intermediate: 16,
+    advanced: 8
+  };
+
+  // Create a structured roadmap template for the custom career
+  const titleCase = careerGoal.split('-').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
+
+  return {
+    title: titleCase,
+    description: `A comprehensive learning path to become a ${titleCase} with industry-relevant skills and practical experience.`,
+    estimatedWeeks: {
+      beginner: levelWeeks.beginner,
+      intermediate: levelWeeks.intermediate,
+      advanced: levelWeeks.advanced
+    },
+    skills: [
+      { name: 'Core Concepts', category: 'Fundamentals', proficiencyLevel: 'advanced', priority: 1 },
+      { name: 'Industry Tools', category: 'Tools', proficiencyLevel: 'advanced', priority: 2 },
+      { name: 'Best Practices', category: 'Skills', proficiencyLevel: 'intermediate', priority: 3 },
+      { name: 'Project Management', category: 'Soft Skills', proficiencyLevel: 'intermediate', priority: 4 },
+      { name: 'Communication', category: 'Soft Skills', proficiencyLevel: 'intermediate', priority: 5 }
+    ],
+    milestones: [
+      { order: 1, title: 'Foundation', description: `Learn the fundamentals of ${titleCase}`, duration: '4 weeks', durationWeeks: 4, skills: ['Core Concepts', 'Basic Tools'] },
+      { order: 2, title: 'Core Skills', description: 'Develop essential technical skills', duration: '4 weeks', durationWeeks: 4, skills: ['Technical Skills', 'Problem Solving'] },
+      { order: 3, title: 'Practical Application', description: 'Apply knowledge through hands-on projects', duration: '4 weeks', durationWeeks: 4, skills: ['Project Work', 'Collaboration'] },
+      { order: 4, title: 'Advanced Topics', description: 'Master advanced concepts and techniques', duration: '4 weeks', durationWeeks: 4, skills: ['Advanced Concepts', 'Optimization'] },
+      { order: 5, title: 'Portfolio & Career', description: 'Build portfolio and prepare for job market', duration: '4 weeks', durationWeeks: 4, skills: ['Portfolio', 'Interview Prep'] }
+    ],
+    exams: [
+      { title: `${titleCase} Fundamentals`, skill: 'Fundamentals', difficulty: 'beginner', order: 1 },
+      { title: `Core ${titleCase} Skills`, skill: 'Core Skills', difficulty: 'intermediate', order: 2 },
+      { title: `Advanced ${titleCase}`, skill: 'Advanced', difficulty: 'advanced', order: 3 },
+      { title: `${titleCase} Certification`, skill: 'Full', difficulty: 'advanced', order: 4 }
+    ],
+    courses: [
+      { title: `Introduction to ${titleCase}`, provider: 'Online Learning', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(titleCase + ' tutorial'), duration: '3h', type: 'video', priority: 'essential' },
+      { title: `${titleCase} for Beginners`, provider: 'Educational Platform', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(titleCase + ' for beginners'), duration: '4h', type: 'video', priority: 'essential' },
+      { title: `Advanced ${titleCase}`, provider: 'Expert Course', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent('advanced ' + titleCase), duration: '5h', type: 'video', priority: 'recommended' }
+    ],
+    liveSessions: [
+      { title: `${titleCase} Fundamentals Workshop`, topic: 'Fundamentals', duration: '2 hours', instructor: 'Industry Expert' },
+      { title: 'Career Guidance Session', topic: 'Career', duration: '1.5 hours', instructor: 'Career Coach' },
+      { title: `${titleCase} Best Practices`, topic: 'Best Practices', duration: '2 hours', instructor: 'Senior Professional' }
+    ]
+  };
+};
+
 // Generate roadmap for user
 export const generateRoadmap = async (req, res) => {
   try {
-    const { careerGoal, currentLevel = 'beginner' } = req.body;
+    const { careerGoal, customGoalName, currentLevel = 'beginner' } = req.body;
     const userId = req.user.id;
 
-    // Check if career path exists
-    const careerPath = careerPaths[careerGoal];
+    // Check if career path exists in predefined paths
+    let careerPath = careerPaths[careerGoal];
+    let isCustomPath = false;
+
+    // If not found, generate custom roadmap
     if (!careerPath) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid career goal. Please select a valid career path.' 
-      });
+      if (!customGoalName && !careerGoal) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Please provide a career goal.' 
+        });
+      }
+      
+      careerPath = await generateCustomRoadmapContent(customGoalName || careerGoal, currentLevel);
+      isCustomPath = true;
     }
 
     // Check if user already has an active roadmap for this career
