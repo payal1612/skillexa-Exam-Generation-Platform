@@ -98,7 +98,7 @@ export const getDashboardStats = async (req, res, next) => {
     // Recent activity
     const recentExamResults = await ExamResult.find()
       .populate('user', 'name email')
-      .populate('exam', 'title')
+      .populate('exam', 'title skillName')
       .sort({ createdAt: -1 })
       .limit(10);
 
@@ -1162,15 +1162,31 @@ export const getRecentActivity = async (req, res, next) => {
 
     // Combine and sort by date
     const activities = [
-      ...recentExams.map(r => ({
-        type: 'exam',
-        action: r.status === 'passed' || (r.status === 'completed' && r.score >= 60) ? 'passed' : 'failed',
-        user: r.user?.name || 'Unknown',
-        email: r.user?.email,
-        target: r.skillName || r.exam?.skillName || r.exam?.title || 'AI Generated Exam',
-        score: r.score,
-        date: r.createdAt
-      })),
+      ...recentExams.map(r => {
+        // Determine the best skill name to display
+        let targetName = 'Unknown Skill';
+        if (r.exam?.skillName && r.exam.skillName !== 'AI Generated Exam') {
+          targetName = r.exam.skillName;
+        } else if (r.exam?.title && r.exam.title !== 'AI Generated Exam') {
+          targetName = r.exam.title;
+        } else if (r.skillName && r.skillName !== 'AI Generated Exam') {
+          targetName = r.skillName;
+        } else if (r.exam?.title) {
+          targetName = r.exam.title;
+        } else if (r.skillName) {
+          targetName = r.skillName;
+        }
+        
+        return {
+          type: 'exam',
+          action: r.status === 'passed' || (r.status === 'completed' && r.score >= 60) ? 'passed' : 'failed',
+          user: r.user?.name || 'Unknown',
+          email: r.user?.email,
+          target: targetName,
+          score: r.score,
+          date: r.createdAt
+        };
+      }),
       ...recentCertificates.map(c => ({
         type: 'certificate',
         action: 'earned',

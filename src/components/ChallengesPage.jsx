@@ -267,14 +267,33 @@ export default function ChallengesPage({ onBack }) {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'active':
-        return { label: 'Live Now', color: 'bg-green-500 text-white', icon: Play };
+        return { label: 'In Progress', color: 'bg-green-500 text-white', icon: Play };
       case 'upcoming':
-        return { label: 'Upcoming', color: 'bg-blue-500 text-white', icon: Clock };
+        return { label: 'Not Started', color: 'bg-blue-500 text-white', icon: Clock };
       case 'completed':
         return { label: 'Completed', color: 'bg-gray-500 text-white', icon: CheckCircle };
       default:
         return { label: status, color: 'bg-gray-200 text-gray-700', icon: AlertCircle };
     }
+  };
+
+  // Derive status from dates to avoid stale values from the backend
+  const deriveStatus = (challenge) => {
+    if (!challenge?.startDate || !challenge?.endDate) {
+      return challenge?.status || 'upcoming';
+    }
+
+    const now = Date.now();
+    const start = new Date(challenge.startDate).getTime();
+    const end = new Date(challenge.endDate).getTime();
+
+    if (Number.isNaN(start) || Number.isNaN(end)) {
+      return challenge?.status || 'upcoming';
+    }
+
+    if (now < start) return 'upcoming';
+    if (now <= end) return 'active';
+    return 'completed';
   };
 
   const formatDate = (date) => {
@@ -489,10 +508,11 @@ export default function ChallengesPage({ onBack }) {
 
   // Filter challenges by tab
   const filteredChallenges = challenges.filter(c => {
+    const status = deriveStatus(c);
     if (activeTab === 'all') return true;
-    if (activeTab === 'active') return c.status === 'active';
-    if (activeTab === 'upcoming') return c.status === 'upcoming';
-    if (activeTab === 'completed') return c.status === 'completed';
+    if (activeTab === 'active') return status === 'active';
+    if (activeTab === 'upcoming') return status === 'upcoming';
+    if (activeTab === 'completed') return status === 'completed';
     if (activeTab === 'my') return c.participants?.some(p => p.userId === 'current-user');
     return true;
   });
@@ -697,7 +717,8 @@ export default function ChallengesPage({ onBack }) {
             {filteredChallenges.map(challenge => {
               const eventConfig = getEventTypeConfig(challenge.eventType);
               const diffConfig = getDifficultyConfig(challenge.difficulty);
-              const statusBadge = getStatusBadge(challenge.status);
+              const derivedStatus = deriveStatus(challenge);
+              const statusBadge = getStatusBadge(derivedStatus);
               const StatusIcon = statusBadge.icon;
               const EventIcon = eventConfig.icon;
 
@@ -757,9 +778,9 @@ export default function ChallengesPage({ onBack }) {
                       <div className="flex items-center gap-1">
                         <Timer className="w-4 h-4" />
                         <span>
-                          {challenge.status === 'active'
+                          {derivedStatus === 'active'
                             ? getTimeRemaining(challenge.endDate)
-                            : challenge.status === 'upcoming'
+                            : derivedStatus === 'upcoming'
                             ? `Starts ${formatDate(challenge.startDate)}`
                             : 'Ended'}
                         </span>
@@ -811,8 +832,8 @@ export default function ChallengesPage({ onBack }) {
                 <span className="text-white/90 font-medium">
                   {getEventTypeConfig(selectedChallenge.eventType).label}
                 </span>
-                <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(selectedChallenge.status).color}`}>
-                  {getStatusBadge(selectedChallenge.status).label}
+                <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(deriveStatus(selectedChallenge)).color}`}>
+                  {getStatusBadge(deriveStatus(selectedChallenge)).label}
                 </span>
               </div>
               <h2 className="text-2xl font-bold text-white">{selectedChallenge.title}</h2>
@@ -944,7 +965,7 @@ export default function ChallengesPage({ onBack }) {
                 >
                   Close
                 </button>
-                {selectedChallenge.status !== 'completed' && (
+                {deriveStatus(selectedChallenge) !== 'completed' && (
                   <>
                     {/* Check if user is already registered */}
                     {selectedChallenge.isRegistered || selectedChallenge.participants?.some(p => {
