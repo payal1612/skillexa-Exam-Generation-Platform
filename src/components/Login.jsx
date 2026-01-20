@@ -434,35 +434,7 @@ export default function Login({ goToRegister, goToLanding, onLogin }) {
               </button>
             </form>
 
-            {/* Demo Credentials */}
-            <div className="mt-8 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
-              <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-violet-600" />
-                Demo Credentials:
-              </p>
-
-              <div className="space-y-2 text-sm text-gray-700">
-
-                {/* Normal User */}
-                <div className="flex items-center gap-2 p-2 bg-white rounded border">
-                  <User className="w-4 h-4 text-gray-600" />
-                  <span className="font-mono">user@example.com / password123</span>
-                </div>
-
-                {/* Admin */}
-                <div className="flex items-center gap-2 p-2 bg-white rounded border">
-                  <Shield className="w-4 h-4 text-gray-600" />
-                  <span className="font-mono">admin@example.com / password123</span>
-                </div>
-
-                {/* Instructor */}
-                <div className="flex items-center gap-2 p-2 bg-white rounded border">
-                  <GraduationCap className="w-4 h-4 text-gray-600" />
-                  <span className="font-mono">instructor@example.com / password123</span>
-                </div>
-
-              </div>
-            </div>
+            
 
             {/* Register link */}
             <div className="mt-8 text-center text-sm text-gray-600">
